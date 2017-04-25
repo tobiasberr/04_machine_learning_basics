@@ -1,61 +1,84 @@
-# Linear regression example in TF.
-
+import numpy as np
 import tensorflow as tf
 
-W = tf.Variable(tf.zeros([2, 1]), name="weights")
-b = tf.Variable(0., name="bias")
+# Model parameters
+W = tf.Variable([[0.3], [4.5]], tf.float32) # [0.417362099], [5.216590809]
+b = tf.Variable([69.0], tf.float32) #[77.98253861]
+
+tf.summary.histogram('b', b)
+tf.summary.histogram('W', W)
+# Model input and output
+x = tf.placeholder(tf.float32)
+linear_model = tf.matmul(x, W) + b
+y = tf.placeholder(tf.float32)
+# loss
+loss = tf.reduce_sum(tf.square(linear_model - y)) # sum of the squares
+tf.summary.scalar('loss', loss)
+# optimizer
+train = tf.train.GradientDescentOptimizer(0.000001).minimize(loss)
+# training data
+x_train = [[84.0, 46.0], [73, 20], [65, 52], [70, 30], [76, 57], [69, 25], [63, 28], [72, 36], [79, 57], [75, 44],
+              [27, 24], [89, 31], [65, 52], [57, 23], [59, 60], [69, 48], [60, 34], [79, 51], [75, 50], [82, 34],
+              [59, 46], [67, 23], [85, 37], [55, 40], [63, 30]]
+y_train = [[354], [190], [405], [263], [451], [302], [288], [385], [402], [365], [209], [290], [346], [254], [395], [434], [220], [374], [308], [220], [311], [181], [274], [303], [244]]
+#y_train = [353.004132118, 212.7817880027, 376.3737970937, 263.6956097942, 407.0477342244, 237.1952936515, 250.3408934851, 295.8298788446, 408.2998205207, 338.8146916113, 214.4494946933, 276.8420804801, 376.3737970937, 221.7537668484, 415.6023509712, 357.1768822537, 280.3883520415, 377.000275668, 370.114236464, 289.5703182149, 342.5700796482, 225.9273878363, 306.4721769377, 309.6010864002, 260.7740751027]
+#y_train = [[353.004132118], [212.7817880027], [376.3737970937], [263.6956097942], [407.0477342244], [237.1952936515], [250.3408934851], [295.8298788446], [408.2998205207], [338.8146916113], [214.4494946933], [276.8420804801], [376.3737970937], [221.7537668484], [415.6023509712], [357.1768822537], [280.3883520415], [377.000275668], [370.114236464], [289.5703182149], [342.5700796482], [225.9273878363], [306.4721769377], [309.6010864002], [260.7740751027]]
 
 
-def inference(X):
-    return tf.matmul(X, W) + b
+# training loop
+init = tf.global_variables_initializer()
+sess = tf.Session()
+
+sess.run(init) # reset values to wrong
+merged = tf.summary.merge_all()
+writer = tf.summary.FileWriter("./" ,sess.graph)
+
+'''''
+
+print("anfangsbeispiel")
+curr_W, curr_b, curr_loss = sess.run([W, b, loss], {x: x_train, y: y_train})
+print("W: %s b: %s loss: %s" % (curr_W, curr_b, curr_loss))
+print("predicted")
+predicted = tf.matmul(x_train, W) + b
+print(type(predicted))
+print(sess.run(predicted))
+
+print("y_train")
+print(type(y_train))
+print(y_train)
+ytensor=tf.to_float(y_train)
+print("ytensor")
+print(type(ytensor))
+print(sess.run(ytensor))
+
+print("error")
+print(sess.run(tf.squared_difference(predicted, tf.to_float(y_train))))
+
+'''
+
+for i in range(30):
+  summary, _ = sess.run([merged, train], feed_dict={x:x_train, y:y_train})
+  writer.add_summary(summary, global_step=i)
+
+  curr_W, curr_b, curr_loss  = sess.run([W, b, loss], {x:x_train, y:y_train})
+  print("W: %s b: %s loss: %s"%(curr_W, curr_b, curr_loss))
+  #print("Wtype: %s btype: %s losstype: %s"%(type(curr_W), type(curr_b), type(curr_loss)))
+
+    # hab CUDA deinstalliert, damit externen Bildschirm wieder funktioniert, falls Du es mal wieder probieren willst, hier sind die PAth umgebungsvarialen
+  #CUDA_PATH C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v8.0
+  #CUDA_PATH_V8_0 C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v8.0
+  #NVCUDASAMPLES_ROOT C:\ProgramData\NVIDIA Corporation\CUDA Samples\v8.0
+  #NVCUDASAMPLES8_0_ROOT C:\ProgramData\NVIDIA Corporation\CUDA Samples\v8.0
+  #NVTOOLSEXT_PATH C:\Program Files\NVIDIA Corporation\NvToolsExt\
+  #Path C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v8.0\bin   C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v8.0\libnvvp
 
 
-def loss(X, Y):
-    Y_predicted = inference(X)
-    return tf.reduce_sum(tf.squared_difference(Y, Y_predicted))
 
+# evaluate training accuracy
+curr_W, curr_b, curr_loss  = sess.run([W, b, loss], {x:x_train, y:y_train})
+print("W: %s b: %s loss: %s"%(curr_W, curr_b, curr_loss))
 
-def inputs():
-    # Data from http://people.sc.fsu.edu/~jburkardt/datasets/regression/x09.txt
-    weight_age = [[84, 46], [73, 20], [65, 52], [70, 30], [76, 57], [69, 25], [63, 28], [72, 36], [79, 57], [75, 44], [27, 24], [89, 31], [65, 52], [57, 23], [59, 60], [69, 48], [60, 34], [79, 51], [75, 50], [82, 34], [59, 46], [67, 23], [85, 37], [55, 40], [63, 30]]
-    blood_fat_content = [354, 190, 405, 263, 451, 302, 288, 385, 402, 365, 209, 290, 346, 254, 395, 434, 220, 374, 308, 220, 311, 181, 274, 303, 244]
-
-    return tf.to_float(weight_age), tf.to_float(blood_fat_content)
-
-
-def train(total_loss):
-    learning_rate = 0.0000001
-    return tf.train.GradientDescentOptimizer(learning_rate).minimize(total_loss)
-
-
-def evaluate(sess, X, Y):
-    print(sess.run(inference([[80., 25.]]))) # ~ 303
-    print(sess.run(inference([[65., 25.]]))) # ~ 256
-
-# Launch the graph in a session, setup boilerplate
-with tf.Session() as sess:
-
-    tf.global_variables_initializer().run()
-
-    X, Y = inputs()
-
-    total_loss = loss(X, Y)
-    train_op = train(total_loss)
-
-    coord = tf.train.Coordinator()
-    threads = tf.train.start_queue_runners(sess=sess, coord=coord)
-
-    # actual training loop
-    training_steps = 1000
-    for step in range(training_steps):
-        sess.run([train_op])
-        if step % 10 == 0:
-            print ("loss: ", sess.run([total_loss]))
-
-    evaluate(sess, X, Y)
-
-    coord.request_stop()
-    coord.join(threads)
-    sess.close()
-
-
+# open cmd comand fenster
+# zuerst auf laufwerk D: wechseln
+# python -m tensorflow.tensorboard --logdir=D:\tobylabtop\AI\newprojects --debug
+# you can leave everything open, it will reload new eventfile every 120 sec
