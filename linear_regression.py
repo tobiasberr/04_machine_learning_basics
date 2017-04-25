@@ -2,8 +2,8 @@ import numpy as np
 import tensorflow as tf
 
 # Model parameters
-W = tf.Variable([[0.3], [4.5]], tf.float32) # [0.417362099], [5.216590809]
-b = tf.Variable([69.0], tf.float32) #[77.98253861]
+W = tf.Variable([[0.0], [0.0]], tf.float32) # [0.417362099], [5.216590809]   [[0.3], [4.5]]
+b = tf.Variable([0.0], tf.float32) #[77.98253861]       [69.0]
 
 tf.summary.histogram('b', b)
 tf.summary.histogram('W', W)
@@ -33,52 +33,17 @@ sess.run(init) # reset values to wrong
 merged = tf.summary.merge_all()
 writer = tf.summary.FileWriter("./" ,sess.graph)
 
-'''''
 
-print("anfangsbeispiel")
-curr_W, curr_b, curr_loss = sess.run([W, b, loss], {x: x_train, y: y_train})
-print("W: %s b: %s loss: %s" % (curr_W, curr_b, curr_loss))
-print("predicted")
-predicted = tf.matmul(x_train, W) + b
-print(type(predicted))
-print(sess.run(predicted))
 
-print("y_train")
-print(type(y_train))
-print(y_train)
-ytensor=tf.to_float(y_train)
-print("ytensor")
-print(type(ytensor))
-print(sess.run(ytensor))
-
-print("error")
-print(sess.run(tf.squared_difference(predicted, tf.to_float(y_train))))
-
-'''
-
-for i in range(30):
-  summary, _ = sess.run([merged, train], feed_dict={x:x_train, y:y_train})
+for i in range(3000):
+#  summary, _ = sess.run([merged, train], feed_dict={x:x_train, y:y_train})
+  curr_W, curr_b, curr_loss, summary, _ = sess.run([W, b, loss, merged, train], feed_dict={x:x_train, y:y_train})
+  print("W: %s b: %s loss: %s"%(curr_W, curr_b, curr_loss))
   writer.add_summary(summary, global_step=i)
 
-  curr_W, curr_b, curr_loss  = sess.run([W, b, loss], {x:x_train, y:y_train})
-  print("W: %s b: %s loss: %s"%(curr_W, curr_b, curr_loss))
-  #print("Wtype: %s btype: %s losstype: %s"%(type(curr_W), type(curr_b), type(curr_loss)))
 
-    # hab CUDA deinstalliert, damit externen Bildschirm wieder funktioniert, falls Du es mal wieder probieren willst, hier sind die PAth umgebungsvarialen
-  #CUDA_PATH C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v8.0
-  #CUDA_PATH_V8_0 C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v8.0
-  #NVCUDASAMPLES_ROOT C:\ProgramData\NVIDIA Corporation\CUDA Samples\v8.0
-  #NVCUDASAMPLES8_0_ROOT C:\ProgramData\NVIDIA Corporation\CUDA Samples\v8.0
-  #NVTOOLSEXT_PATH C:\Program Files\NVIDIA Corporation\NvToolsExt\
-  #Path C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v8.0\bin   C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v8.0\libnvvp
-
-
-
-# evaluate training accuracy
-curr_W, curr_b, curr_loss  = sess.run([W, b, loss], {x:x_train, y:y_train})
-print("W: %s b: %s loss: %s"%(curr_W, curr_b, curr_loss))
 
 # open cmd comand fenster
-# zuerst auf laufwerk D: wechseln
-# python -m tensorflow.tensorboard --logdir=D:\tobylabtop\AI\newprojects --debug
+# zuerst auf ordner indem event datei liegt wechseln
+# tensorboard --logdir=. --debug
 # you can leave everything open, it will reload new eventfile every 120 sec
